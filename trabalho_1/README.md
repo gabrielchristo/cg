@@ -4,7 +4,7 @@
 
 - Gabriel Christo - 117217732
 
-- Lucas
+- Lucas Guimarães - 114136076
 
 ### Objetivo
 
