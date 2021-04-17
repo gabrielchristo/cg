@@ -2,10 +2,21 @@
 
 ### Membros
 
-- Gabriel
+- Gabriel Christo - 117217732
 
 - Lucas
 
 ### Objetivo
 
 Rasterização de primitivas gráficas
+
+
+### TODO
+
+- criar bounding box da primitiva
+
+- teste se ponto está no poligono
+
+- aplicar transformação dos xform
+
+- escolher implementação extra
