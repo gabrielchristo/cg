@@ -24,7 +24,69 @@
             this.y2 = y2;
         }
     }
-        
+       
+    function get_x_points_list(primitive) {
+    	
+    	let vertices = primitive.vertices
+    	let point_list = []
+    	let i = 0
+    	for (i = 0; i < vertices.length; i++) {
+    		point_list.push(vertices[i][0])
+    	}
+    	return point_list
+    }
+
+    function get_y_points_list(primitive) {
+    	
+    	let vertices = primitive.vertices
+    	let point_list = []
+    	let i = 0
+    	for (i = 0; i < vertices.length; i++) {
+    		point_list.push(vertices[i][1])
+    	}
+    	return point_list
+    }
+
+    function create_bounding_box(primitive) {
+
+    	// Bounding box for a circle
+    	if(primitive.shape == "circle") {
+    		
+    		let center = primitive.center
+    		let radius = primitive.radius
+    		
+    		// Getting smallest and largest values in X-axis
+    		let x1 = (center[0] - radius)
+    		let x2 = (center[0] + radius)
+    	
+    		// Getting smallest and largest values in Y-axis
+    		let y1 = (center[1] - radius)
+    		let y2 = (center[1] + radius)
+
+    		// Instanciar classe Rectangle(x1,x2,y1,y2)
+    	}
+
+    	// Bounding box for other convex polygons
+    	else {
+    		
+    		let vertices = primitive.vertices
+    		//let x_values = [vertices[0][0], vertices[1][0], vertices[2][0]]
+    		//let y_values = [vertices[0][1], vertices[1][1], vertices[2][1]]
+    		let x_values = get_x_points_list(vertices)
+    		let y_values = get_y_points_list(vertices)
+
+    		// Getting smallest and largest values in X-axis
+    		let x1 = Math.min(...x_values) 
+    		let x2 = Math.max(...x_values)
+
+    		// Getting smallest and largest values in Y-axis
+    		let y1 = Math.min(...y_values) 
+    		let y2 = Math.max(...y_values)
+
+    		// Instanciar classe Rectangle(x1,x2,y1,y2)
+    	}
+    }
+
     function inside(  x, y, primitive  ) {
             // You should implement your inside test here for all shapes   
             // for now, it only returns a false test
@@ -72,6 +134,11 @@
     // result > 0 : left side
     function check_side(point, edge1, edge2) {
         return (point.x - edge2.x) * (edge1.y - edge2.y) - (edge1.x - edge2.x) * (point.y - edge2.y);
+    }
+
+    // check if a point p is inside a 
+    function is_inside_rectangle(p, x1, x2, y1, y2) {
+    	return ((p[0] > x1 && p[0] < x2) && (p[1] > y1 && p[1] < y2))
     }
 
     // check if a point p is inside a triangle with vertices v1, v2 and v3
