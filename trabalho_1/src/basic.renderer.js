@@ -280,9 +280,18 @@
                 for( var primitive of scene ) {  
                     // do some processing
                     // for now, only copies each primitive to a new list
-
-                    preprop_scene.push( primitive );
                     
+                    let transformed = primitive;
+
+                    if (transformed.hasOwnProperty('xform')) {
+                        if (transformed.shape == 'circle') {
+                        
+                        }
+                        else {
+                            transformed.vertices = transformation(transformed.vertices, transformed.xform)
+                        }
+                    }
+                    preprop_scene.push(transformed);
                 }
 
                 return preprop_scene;
