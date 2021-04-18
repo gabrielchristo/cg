@@ -24,66 +24,41 @@
             this.y2 = y2;
         }
     }
-       
-    function get_x_points_list(primitive) {
-    	
-    	let vertices = primitive.vertices
-    	let point_list = []
-    	let i = 0
-    	for (i = 0; i < vertices.length; i++) {
-    		point_list.push(vertices[i][0])
-    	}
-    	return point_list
-    }
 
-    function get_y_points_list(primitive) {
-    	
-    	let vertices = primitive.vertices
-    	let point_list = []
-    	let i = 0
-    	for (i = 0; i < vertices.length; i++) {
-    		point_list.push(vertices[i][1])
-    	}
-    	return point_list
-    }
-
+    // creates bounding box for given primitive array of vertices
     function create_bounding_box(primitive) {
 
     	// Bounding box for a circle
     	if(primitive.shape == "circle") {
     		
-    		let center = primitive.center
-    		let radius = primitive.radius
-    		
-    		// Getting smallest and largest values in X-axis
-    		let x1 = (center[0] - radius)
-    		let x2 = (center[0] + radius)
-    	
-    		// Getting smallest and largest values in Y-axis
-    		let y1 = (center[1] - radius)
-    		let y2 = (center[1] + radius)
+    		let center = primitive.center;
+    		let radius = primitive.radius;
 
-    		// Instanciar classe Rectangle(x1,x2,y1,y2)
+    		// Rectangle defined by smallest and largest values at X-axis and Y-axis
+            let r = new Rectangle((center[0] - radius), (center[0] + radius), (center[1] - radius), (center[1] + radius));
+            console.log("circle bounding box: ", r);
+
+            return r;
     	}
 
     	// Bounding box for other convex polygons
     	else {
     		
-    		let vertices = primitive.vertices
-    		//let x_values = [vertices[0][0], vertices[1][0], vertices[2][0]]
-    		//let y_values = [vertices[0][1], vertices[1][1], vertices[2][1]]
-    		let x_values = get_x_points_list(vertices)
-    		let y_values = get_y_points_list(vertices)
+    		let vertices = primitive.vertices;
+    		
+            // filtering x and y values
+    		let x_values = vertices.map( (value) => { return value[0] });
+    		let y_values = vertices.map( (value) => { return value[1] });
 
-    		// Getting smallest and largest values in X-axis
-    		let x1 = Math.min(...x_values) 
-    		let x2 = Math.max(...x_values)
+            console.log("vertices: ", vertices);
+            console.log("x values: ", x_values);
+            console.log("y values: ", y_values);
 
-    		// Getting smallest and largest values in Y-axis
-    		let y1 = Math.min(...y_values) 
-    		let y2 = Math.max(...y_values)
+    		// Rectangle defined by smallest and largest values at X-axis and Y-axis
+            let r = new Rectangle(Math.min(...x_values), Math.max(...x_values), Math.min(...y_values), Math.max(...y_values));
+            console.log("polygon bounding box: ", r);
 
-    		// Instanciar classe Rectangle(x1,x2,y1,y2)
+            return r;
     	}
     }
 
@@ -136,9 +111,9 @@
         return (point.x - edge2.x) * (edge1.y - edge2.y) - (edge1.x - edge2.x) * (point.y - edge2.y);
     }
 
-    // check if a point p is inside a 
-    function is_inside_rectangle(p, x1, x2, y1, y2) {
-    	return ((p[0] > x1 && p[0] < x2) && (p[1] > y1 && p[1] < y2))
+    // check if a point p is inside a rectangle r
+    function is_inside_rectangle(p, r) {
+    	return ((p.x > r.x1 && p.x < r.x2) && (p.y > r.y1 && p.y < r.y2));
     }
 
     // check if a point p is inside a triangle with vertices v1, v2 and v3
@@ -192,7 +167,8 @@
     function Screen( width, height, scene ) {
         this.width = width;
         this.height = height;
-        this.scene = this.preprocess(scene); // array of primitives 
+        this.scene = this.preprocess(scene); // array of primitives
+        this.bounding_boxes = this.process_bounding_boxes(scene); // array of bounding boxes
         this.createImage(); 
     }
 
@@ -211,9 +187,17 @@
                     preprop_scene.push( primitive );
                     
                 }
-
                 
                 return preprop_scene;
+            },
+
+            // return array of all primitives rectangle bounding boxes
+            process_bounding_boxes: function(scene) {
+                let rectanglesArray = [];
+                for(var primitive of scene){
+                    rectanglesArray.push(create_bounding_box(primitive));
+                }
+                return rectanglesArray;
             },
 
             // creates a matrix height x width x 3 with value 255 at all entries
@@ -225,13 +209,17 @@
                 var color;
          
                 // In this loop, the image attribute must be updated after the rasterization procedure.
-                for( var primitive of this.scene ) {
+                for( var primitive of this.scene) {
+
+                    // getting current bounding box rectangle
+                    let currentIndex = scene.indexOf(primitive);
+                    let currentBoundingBox = this.bounding_boxes[currentIndex];
 
                     // Loop through all pixels
                     // Use bounding boxes in order to speed up this loop
-                    for (var i = 0; i < this.width; i++) {
+                    for (var i = currentBoundingBox.x1; i < currentBoundingBox.x2; i++) {
                         var x = i + 0.5;
-                        for( var j = 0; j < this.height; j++) {
+                        for( var j = currentBoundingBox.y1; j < currentBoundingBox.y2; j++) {
                             var y = j + 0.5;
 
                             // First, we check if the pixel center is inside the primitive 
