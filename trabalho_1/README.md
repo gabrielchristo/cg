@@ -13,9 +13,9 @@ Rasterização de primitivas gráficas
 
 ### TODO
 
-- criar bounding box da primitiva
+- criar bounding box da primitiva (Feito)
 
-- teste se ponto está no poligono
+- teste se ponto está no poligono (Feito)
 
 - aplicar transformação dos xform
 
