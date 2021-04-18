@@ -97,13 +97,14 @@
                     vertices.reverse();
                 }
                 
-                return is_inside_convex_polygon(p, vertices);
+                //return is_inside_convex_polygon(p, vertices);
+                return is_inside_any_polygon(p, vertices);
             }
             
             return false;
     }
 
-    // check the side of a line where a point is
+    // check the side of a line where a point is using dot product
     // it computes (y-y0)(x1-x0) - (x-x0)(y1-y0)
     // result < 0 : right side
     // result > 0 : left side
@@ -114,6 +115,19 @@
     // check if a point p is inside a rectangle r
     function is_inside_rectangle(p, r) {
     	return ((p.x > r.x1 && p.x < r.x2) && (p.y > r.y1 && p.y < r.y2));
+    }
+
+    // check if a point p is at a rectangle r border
+    function is_at_rectangle_border(p, r){
+
+        // at least one checking must be zero
+        // it means the point is exactly over some line of the rectangle
+        let c1 = check_side(p, new Point(r.x1, r.y1), new Point(r.x2, r.y1));
+        let c2 = check_side(p, new Point(r.x1, r.y2), new Point(r.x2, r.y2));
+        let c3 = check_side(p, new Point(r.x1, r.y1), new Point(r.x1, r.y2));
+        let c4 = check_side(p, new Point(r.x2, r.y1), new Point(r.x2, r.y2));
+
+        return !c1 || !c2 || !c3 || !c4;
     }
 
     // check if a point p is inside a triangle with vertices v1, v2 and v3
@@ -134,7 +148,7 @@
         return (Math.pow(p.x - c.x, 2) + Math.pow(p.y - c.y, 2)) < Math.pow(r, 2);
     }
 
-    // check if a polygon define by an array of points is clockwise
+    // check if a polygon defined by an array of points is clockwise
     function is_polygon_clockwise(polygon){
         let sum = 0;
         for (let i = 0; i < polygon.length - 1; i++) {
@@ -149,10 +163,13 @@
 
         let lo = 1, hi = v.length - 1;
 
+        // if right side of clockwise polygon, point is out
         if (check_side(v[1], v[0], p) <= 0) return false;
         
+        // same checking above, but with first and last polygon points
         if (check_side(v[0], v[v.length - 1], p) <= 0) return false;
 
+        // if none of tests above failed, we need to check the others line segments by a binary search
         while (hi - lo > 1)
         {
             let mid = (lo + hi) / 2;
@@ -161,6 +178,23 @@
         }
 
         return check_side(v[hi], v[lo], p) > 0;
+    }
+
+    // check if a point p is inside a convex or non-convex polygon
+    // based on pnpoly ray casting algorithm
+    function is_inside_any_polygon(p, v) {
+        
+        let isInside = false;
+
+        for(let i = 0, j = v.length - 1; i < v.length; j = i++){
+
+            let condition1 = (v[i].y > p.y) != (v[j].y > p.y);
+            let condition2 = p.x < (v[j].x - v[i].x) * (p.y - v[i].y) / (v[j].y - v[i].y) + v[i].x;
+
+            if (condition1 && condition2)
+                isInside = !isInside;
+        }
+        return isInside;
     }
         
     
@@ -187,7 +221,7 @@
                     preprop_scene.push( primitive );
                     
                 }
-                
+
                 return preprop_scene;
             },
 
@@ -217,15 +251,23 @@
 
                     // Loop through all pixels
                     // Use bounding boxes in order to speed up this loop
-                    for (var i = currentBoundingBox.x1; i < currentBoundingBox.x2; i++) {
+                    for (var i = currentBoundingBox.x1; i <= currentBoundingBox.x2; i++) {
+                    //for (var i = 0; i < this.width; i++) {
                         var x = i + 0.5;
-                        for( var j = currentBoundingBox.y1; j < currentBoundingBox.y2; j++) {
+                        for( var j = currentBoundingBox.y1; j <= currentBoundingBox.y2; j++) {
+                        //for( var j = 0; j < this.height; j++) {
                             var y = j + 0.5;
 
                             // First, we check if the pixel center is inside the primitive 
                             if ( inside( x, y, primitive ) ) {
                                 // only solid colors for now
                                 color = nj.array(primitive.color);
+                                this.set_pixel( i, this.height - (j + 1), color );
+                            }
+
+                            // if at bounding box border, paint it black
+                            if( is_at_rectangle_border(new Point(i, j), currentBoundingBox) ){
+                                color = nj.array([0, 0, 0]);
                                 this.set_pixel( i, this.height - (j + 1), color );
                             }
                             
