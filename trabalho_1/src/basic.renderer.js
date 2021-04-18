@@ -45,11 +45,31 @@
                 let center = new Point(primitive.center[0], primitive.center[1]);
                 return is_inside_circle(p, center, primitive.radius);
             }
+
+            if(primitive.shape == "polygon"){
+
+                // convert primitive vertices to array of points
+                let vertices = [];
+                primitive.vertices.forEach( (value) => {
+                    vertices.push(new Point(value[0], value[1]));
+                });
+
+                // checking points order
+                if(!is_polygon_clockwise(vertices)){
+                    //console.log("Polygon is counter-clockwise. Reversing");
+                    vertices.reverse();
+                }
+                
+                return is_inside_convex_polygon(p, vertices);
+            }
             
             return false;
     }
 
     // check the side of a line where a point is
+    // it computes (y-y0)(x1-x0) - (x-x0)(y1-y0)
+    // result < 0 : right side
+    // result > 0 : left side
     function check_side(point, edge1, edge2) {
         return (point.x - edge2.x) * (edge1.y - edge2.y) - (edge1.x - edge2.x) * (point.y - edge2.y);
     }
@@ -70,6 +90,35 @@
     // check if a point p is inside a circle with center c and radius r
     function is_inside_circle(p, c, r) {
         return (Math.pow(p.x - c.x, 2) + Math.pow(p.y - c.y, 2)) < Math.pow(r, 2);
+    }
+
+    // check if a polygon define by an array of points is clockwise
+    function is_polygon_clockwise(polygon){
+        let sum = 0;
+        for (let i = 0; i < polygon.length - 1; i++) {
+            let current = polygon[i], next = polygon[i+1];
+            sum += (next.x - current.x) * (next.y + current.y);
+        }
+        return sum > 0;
+    }
+
+    // check if a point p is inside a convex and clockwise polygon defined by an array of points v
+    function is_inside_convex_polygon(p, v) {
+
+        let lo = 1, hi = v.length - 1;
+
+        if (check_side(v[1], v[0], p) <= 0) return false;
+        
+        if (check_side(v[0], v[v.length - 1], p) <= 0) return false;
+
+        while (hi - lo > 1)
+        {
+            let mid = (lo + hi) / 2;
+            if (check_side(v[mid], v[0], p) > 0) lo = mid;
+            else hi = mid;
+        }
+
+        return check_side(v[hi], v[lo], p) > 0;
     }
         
     
