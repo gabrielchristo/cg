@@ -224,7 +224,43 @@
         return winding_number;
     }
         
-    
+    function multiplyMatrices(m1, m2) {
+        var result = [];
+        for (var i = 0; i < m1.length; i++) {
+            result[i] = [];
+            for (var j = 0; j < m2[0].length; j++) {
+                var sum = 0;
+                for (var k = 0; k < m1[0].length; k++) {
+                    sum += m1[i][k] * m2[k][j];
+                }
+                result[i][j] = sum;
+            }
+        }
+        return result;
+    }
+
+    function transformation(v, t) {
+        let vertices = v;
+        for (var i = 0; i < vertices.length; i++) {
+            vertices[i].push(1);
+        }
+        
+        let transformed_vertices = [];
+        let buffer_vector;
+        let result;
+
+        for (var i = 0; i < vertices.length; i++) {
+            buffer_vector = [[0],[0],[0]];
+            for (var j = 0; j < vertices[i].length; j++) {
+                buffer_vector[j][0] = vertices[i][j];
+            }
+            result = multiplyMatrices(t,buffer_vector);
+            result.pop();
+            transformed_vertices.push(result);
+        }
+        return transformed_vertices
+    }
+			     
     function Screen( width, height, scene ) {
         this.width = width;
         this.height = height;
