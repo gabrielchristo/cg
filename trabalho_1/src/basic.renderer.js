@@ -98,7 +98,8 @@
                 }
                 
                 //return is_inside_convex_polygon(p, vertices);
-                return is_inside_any_polygon(p, vertices);
+                //return is_inside_polygon_by_crossing_number(p, vertices);
+                return is_inside_polygon_by_winding_number(p, vertices);
             }
             
             return false;
@@ -108,6 +109,7 @@
     // it computes (y-y0)(x1-x0) - (x-x0)(y1-y0)
     // result < 0 : right side
     // result > 0 : left side
+    // result = 0 : over the line
     function check_side(point, edge1, edge2) {
         return (point.x - edge2.x) * (edge1.y - edge2.y) - (edge1.x - edge2.x) * (point.y - edge2.y);
     }
@@ -181,8 +183,8 @@
     }
 
     // check if a point p is inside a convex or non-convex polygon
-    // based on pnpoly ray casting algorithm
-    function is_inside_any_polygon(p, v) {
+    // based on pnpoly ray casting algorithm, which is based on the jordan curve theorem
+    function is_inside_polygon_by_crossing_number(p, v) {
         
         let isInside = false;
 
@@ -195,6 +197,31 @@
                 isInside = !isInside;
         }
         return isInside;
+    }
+
+    // check if a point p is inside a convex or non-convex polygon
+    function is_inside_polygon_by_winding_number(p, v){
+
+        let winding_number = 0;
+
+        v.push(v[0]); // will connect the last vertice to the first, at the below loop, closing the polygon
+  
+        for (let i = 0; i < v.length - 1; i++) {
+
+            if (v[i].y <= p.y) {                 
+              if (v[i + 1].y > p.y)         
+                if (check_side(v[i], v[i + 1], p) > 0) // checking p is at left of edge
+                  ++winding_number;
+            }
+
+            else {                         
+              if (v[i + 1].y <= p.y)
+                if (check_side(v[i], v[i + 1], p) < 0) // checking p is at right of edge
+                  --winding_number;
+            }
+
+        }
+        return winding_number;
     }
         
     
