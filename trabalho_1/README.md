@@ -26,9 +26,3 @@ Com isso acabamos implementando três maneiras para verificar se dado ponto est�
 - Winding Number: Esse algoritmo calcula quantas voltas fechadas o polígono realiza em volta do ponto, como ilustra a imagem abaixo. Se o número de voltas for maior que zero, o ponto está no interior do polígono.
 
 ![](wn.png)
-
-
-
-### TODO
-
-- aplicar transformação dos xform

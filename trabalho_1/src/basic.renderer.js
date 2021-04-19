@@ -224,6 +224,7 @@
         return winding_number;
     }
         
+    // return the result of two matrices multiplication (m1 x m2)
     function multiplyMatrices(m1, m2) {
         var result = [];
         for (var i = 0; i < m1.length; i++) {
@@ -239,6 +240,7 @@
         return result;
     }
 
+    // apply transformation matrix to an array of points
     function transformation(v, t) {
         let vertices = v;
         for (var i = 0; i < vertices.length; i++) {
@@ -252,7 +254,7 @@
         for (var i = 0; i < vertices.length; i++) {
             buffer_vector = [[0],[0],[0]];
             for (var j = 0; j < vertices[i].length; j++) {
-                buffer_vector[j][0] = vertices[i][j];
+                buffer_vector[j][0] = vertices[i][j]; // calculating transposed vector
             }
             result = multiplyMatrices(t,buffer_vector);
             result.pop();
@@ -265,7 +267,7 @@
         this.width = width;
         this.height = height;
         this.scene = this.preprocess(scene); // array of primitives
-        this.bounding_boxes = this.process_bounding_boxes(scene); // array of bounding boxes
+        this.bounding_boxes = this.process_bounding_boxes(this.scene); // array of bounding boxes
         this.createImage(); 
     }
 
@@ -277,23 +279,25 @@
                 
                 var preprop_scene = [];
 
-                for( var primitive of scene ) {  
+                // loop through primitives
+                for( var primitive of scene ) {
                     // do some processing
                     // for now, only copies each primitive to a new list
-                    
-                    let transformed = primitive;
 
-                    if (transformed.hasOwnProperty('xform')) {
-                        if (transformed.shape == 'circle') {
-                        
+                    if (primitive.hasOwnProperty('xform')) {
+
+                        if (primitive.shape == 'circle') {
+                            // Nota: não conseguimos finalizar a transformação para círculos
                         }
-                        else {
-                            transformed.vertices = transformation(transformed.vertices, transformed.xform)
+
+                        else { // any polygon
+                            primitive.vertices = transformation(primitive.vertices, primitive.xform);
                         }
                     }
-                    preprop_scene.push(transformed);
+                    preprop_scene.push(primitive);
                 }
 
+                console.log("pre processed scene: ", preprop_scene);
                 return preprop_scene;
             },
 
@@ -318,7 +322,7 @@
                 for( var primitive of this.scene) {
 
                     // getting current bounding box rectangle
-                    let currentIndex = scene.indexOf(primitive);
+                    let currentIndex = this.scene.indexOf(primitive);
                     let currentBoundingBox = this.bounding_boxes[currentIndex];
 
                     // Loop through all pixels
@@ -340,7 +344,7 @@
                             // if at bounding box border, paint it black
                             if( is_at_rectangle_border(new Point(i, j), currentBoundingBox) ){
                                 color = nj.array([0, 0, 0]);
-                                this.set_pixel( i, this.height - (j + 1), color );
+                                //this.set_pixel( i, this.height - (j + 1), color );
                             }
                             
                         }
