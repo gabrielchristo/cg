@@ -8,8 +8,8 @@
 
     function ImageProcesser(img, kernel = null, xform = null, bhandler = 'icrop') {
         this.img = img.clone();
-        this.width = img.shape[0];
-        this.heigth = img.shape[1];
+        this.width = img.shape[1];
+        this.heigth = img.shape[0];
         this.kernel = kernel;
         this.xform = xform;
         this.bhandler = bhandler;
@@ -22,7 +22,18 @@
             // border: 'icrop' is for cropping image borders, 'extend' is for extending image border
             // You may create auxiliary functions/methods if you'd like
 
+			if(this.kernel == 'sobel'){
+				console.log('kernel is sobel filter')
+				console.log(this.img)
+				// Verificar novo enunciado
+				// Erro no clone()
+			}
+
         },
+
+		apply_sobel: function(){
+
+		},
 
         apply_xform: function()  {
             // Method to apply affine transform through inverse mapping (incomplete)
@@ -43,8 +54,9 @@
 
             // Loading HTML elements and saving
             var $transformed = document.getElementById('transformed');
-            $transformed.width = this.width; $transformed.height = this.height;
-            nj.images.save(trasformed, $transformed);
+            $transformed.width = this.width;
+			$transformed.height = this.height;
+            nj.images.save(this.img, $transformed);
             var duration = new Date().valueOf() - start;
             document.getElementById('duration').textContent = '' + duration;
         }
