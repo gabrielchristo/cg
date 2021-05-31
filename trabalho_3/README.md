@@ -1,16 +1,9 @@
 # Trabalho 3 - Computação Gráfica
 
-- Gabriel Christo
+- Gabriel Christo - 117217732
 
-- Lucas Guimarães
-
+- Lucas Guimarães - 114136076
 
 ---
 
-
-## TODO
-- anim2: livre (dancar, correr, chorar, gargalhar, pular, comemorar, tocar musica ...)
-- anim3: livre
-- **Nota: usar matrix4 para transformacoes**
-
-- cancelar animcao previa quando trocar
+Objetivo: Realizar três animações utilizando as bibliotecas ThreeJS e TweenJS
