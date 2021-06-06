@@ -22,18 +22,93 @@
             // border: 'icrop' is for cropping image borders, 'extend' is for extending image border
             // You may create auxiliary functions/methods if you'd like
             
+            var source_img = this.img;
+            let extend_edge = Boolean(false);
+            let new_height = this.height;
+            let new_width = this.width;
+
             if(border == 'extend') {
                 
+                extend_edge = Boolean(true);
+                new_height = this.height + 2;
+                new_width = this.width + 2;
+                var new_img = nj.zeros([new_height, new_width]);
+                
+                for (var index_i = 0; index_i < new_height; index_i++) {
+                    for (var index_j = 0; index_j < new_width; index_j++) {
+                        if (index_i == 0) {
+                            if (index_j == 0) {
+                                new_img.set((index_i, index_j, source_img.get(index_i + 1, index_j + 1)));
+                            }
+
+                            else if (index_j == new_width) {
+                                new_img.set((index_i, index_j, source_img.get(index_i + 1, index_j - 1)));
+                            }
+
+                            else {
+                                new_img.set((index_i, index_j, source_img.get(index_i + 1, index_j)));
+                            }
+                        }
+
+                        else if (index_j == 0) {
+                            if (index_i == 0) {
+                                new_img.set((index_i, index_j, source_img.get(index_i + 1, index_j + 1)));
+                            }
+
+                            else if (index_i == new_height) {
+                                new_img.set((index_i, index_j, source_img.get(index_i - 1, index_j + 1)));
+                            }
+
+                            else {
+                                new_img.set((index_i, index_j, source_img.get(index_i, index_j + 1)));
+                            }
+                        }
+
+                        else if (index_j == new_width) {
+                            if (index_i == 0) {
+                                new_img.set((index_i, index_j, source_img.get(index_i + 1, index_j - 1)));
+                            }
+
+                            else if (index_i == new_height) {
+                                new_img.set((index_i, index_j, source_img.get(index_i - 1, index_j - 1)));
+                            }
+
+                            else {
+                                new_img.set((index_i, index_j, source_img.get(index_i, index_j - 1)));
+                            }
+                        }
+
+                        else if (index_i == new_height) {
+                            if (index_j == 0) {
+                                new_img.set((index_i, index_j, source_img.get(index_i - 1, index_j + 1)));
+                            }
+
+                            else if (index_j == new_width) {
+                                new_img.set((index_i, index_j, source_img.get(index_i - 1, index_j - 1)));
+                            }
+
+                            else {
+                                new_img.set((index_i, index_j, source_img.get(index_i - 1, index_j)));
+                            }
+                        }
+
+                        else {
+                            new_img.set((index_i, index_j, source_img.get(index_i, index_j)));
+                        }
+                    }
+                }
             }
 
-            var source_img = this.img;
-
-            var new_img = nj.zeros([this.height,this.width]);
 
             // Aplica box filter
             if (this.kernel == "box") {
-                for (var i = 1; i < this.height - 1; i++) {
-                    for (var j = 1; j < this.width - 1; j++) {
+                
+                if (!extend_edge) {
+                    var new_img = nj.zeros([this.height,this.width]);
+                }
+
+                for (var i = 1; i < new_height - 1; i++) {
+                    for (var j = 1; j < new_width - 1; j++) {
                         var new_pixel_value = 
                             (source_img.get(i - 1, j - 1) +
                             source_img.get(i + 0, j - 1) +
@@ -46,15 +121,19 @@
                             source_img.get(i + 1, j + 1)) / 9;
 
                         new_img.set(i, j, new_pixel_value);
-
                     }
                 }
             }
 
             // Aplica sobel
             else if (this.kernel == "sobel") {
-                for (var i = 1; i < this.height - 1; i++) {
-                    for (var j = 1; j < this.width - 1; j++) {
+                
+                if (!extend_edge) {
+                    var new_img = nj.zeros([this.height,this.width]);
+                }
+
+                for (var i = 1; i < new_height - 1; i++) {
+                    for (var j = 1; j < new_width - 1; j++) {
                         var x_pixel_value = 
                             ((source_img.get(i - 1, j - 1) * -1) +
                             (source_img.get(i + 0, j - 1) * -2) +
@@ -86,8 +165,13 @@
 
             // Aplica laplace
             else if (this.kernel == "laplace") {
-                for (var i = 1; i < this.height - 1; i++) {
-                    for (var j = 1; j < this.width - 1; j++) {
+                
+                if (!extend_edge) {
+                    var new_img = nj.zeros([this.height,this.width]);
+                }
+
+                for (var i = 1; i < new_height - 1; i++) {
+                    for (var j = 1; j < new_width - 1; j++) {
                         var new_pixel_value = 
                             ((source_img.get(i - 1, j - 1) * 0) +
                             (source_img.get(i + 0, j - 1) * -1) +
@@ -109,12 +193,6 @@
         },
 
         apply_xform: function()  {
-            // Pseudocodigo:
-            // Para cada pixel da imagem original:
-                // Pegar pixel_value, x_coordinate e y_coordinate
-                // Computar nova coordenada (new_x, new_y) pós transformação
-                // Pintar (new_x, new_y) com pixel_value
-
 
             var a = this.xform.get(0, 0), b = this.xform.get(0, 1), c = this.xform.get(0, 2);
             var d = this.xform.get(1, 0), e = this.xform.get(1, 1), f = this.xform.get(1, 2);
@@ -137,12 +215,10 @@
             const new_img = nj.zeros([this.height, this.width]);
 
             for (var y = 0; y < 2 * this.height; y++) {
-                // console.log(y);
                 for (var x = 0; x < 2 * this.width; x++) {
                     // var original = (nj.array([x, y, 1]).T).dot(inverse_xform);
                     var original = xform.dot(nj.array([x, y, 1]).T);
                     var original_x = original.get(0), original_y = original.get(1);
-                    // console.log(original_x, original_y);
                     if (original_x < 0 || original_x >= this.width || original_y < 0 || original_y >= this.height) {
                         new_img.set(y + this.height, x + this.width, 255);
                     } else {
@@ -154,8 +230,6 @@
 
                         var result = (1 - a) * (1 - b) * this.img.get(low_y, low_x) + a * (1 - b) * this.img.get(low_y, high_x)
                             + a * b * this.img.get(high_y, high_x) + (1 - a) * b * this.img.get(high_y, low_x);
-                        
-                        console.log(result);
 
                         new_img.set(y, x, result);
                     }
